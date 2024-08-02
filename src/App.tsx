@@ -1,14 +1,11 @@
 import ImageFloat from './ImageFloat'
+import ImageFloatControls from './ImageFloatControls'
 
 function App() {
 	return (
-		<div className="bg-black">
-			<ImageFloat
-				blackholeEffect={true}
-				forceMultiplier={40}
-				src="https://via.placeholder.com/50"
-			>
-				<div>Your content here</div>
+		<div className="bg-black w-screen h-screen">
+			<ImageFloat src="https://via.placeholder.com/50">
+				<ImageFloatControls />
 			</ImageFloat>
 		</div>
 	)

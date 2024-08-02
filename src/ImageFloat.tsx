@@ -1,74 +1,132 @@
-import React, { useEffect, useRef, useState, ReactNode } from 'react'
+import React, {
+	createContext,
+	useState,
+	useContext,
+	useEffect,
+	useRef,
+	ReactNode,
+} from 'react'
 import { useSprings, animated, to } from '@react-spring/web'
 import { throttle } from 'lodash'
 
 const getRandom = (min: number, max: number) =>
 	Math.random() * (max - min) + min
 
-interface ImageFloatProps {
-	/** Source URL of the image. */
-	src: string
-	/** Optional React nodes to be rendered inside the component. */
-	children?: ReactNode
-	/** Optional number of images to be displayed. Defaults to 50. */
-	numImages?: number
-	/** Optional radius for the force field effect. Defaults to 100. */
-	forceFieldRadius?: number
-	/** Optional friction value to be applied to the images. Defaults to a minimum of 15. */
-	friction?: number
-	/** Optional mass value to be applied to the images. Defaults to a minimum of 1. */
-	mass?: number
-	/** Optional image max velocity. Defaults to 100. */
-	maxVelocity?: number
-	/** Optional image size multiplier. */
-	sizeMultiplier?: number
-	/** Optional width of the images. */
-	imageWidth?: number
-	/** Optional height of the images. */
-	imageHeight?: number
-	/** Optional cursor force multiplier. Defaults to 13.66. */
-	forceMultiplier?: number
-	/** Optional boolean to toggle cursor interaction. Defaults to true. */
-	cursorInteract?: boolean
-	/** Optional boolean to toggle blackhole effect. Defaults to false. */
-	blackholeEffect?: boolean
-	/** Optional boolean to toggle collision detection. Defaults to true. */
-	collisions?: boolean
-	/** Optional boolean to enable random movement of images. Defaults to false. */
-	imageJitter?: boolean
-	/** Optional interval in milliseconds for random movement. Defaults to 1000. */
-	jitterInterval?: number
-	/** Optional force value for random movement. Defaults to 10. */
-	jitterForce?: number
+interface ImageFloatContextProps {
+	numImages: number
+	forceFieldRadius: number
+	friction: number
+	mass: number
+	maxVelocity: number
+	sizeMultiplier: number
+	imageWidth: number
+	imageHeight: number
+	forceMultiplier: number
+	cursorInteract: boolean
+	blackholeEffect: boolean
+	collisions: boolean
+	imageJitter: boolean
+	jitterInterval: number
+	jitterForce: number
+	setNumImages: (value: number) => void
+	setForceFieldRadius: (value: number) => void
+	setFriction: (value: number) => void
+	setMass: (value: number) => void
+	setMaxVelocity: (value: number) => void
+	setSizeMultiplier: (value: number) => void
+	setImageWidth: (value: number) => void
+	setImageHeight: (value: number) => void
+	setForceMultiplier: (value: number) => void
+	setCursorInteract: (value: boolean) => void
+	setBlackholeEffect: (value: boolean) => void
+	setCollisions: (value: boolean) => void
+	setImageJitter: (value: boolean) => void
+	setJitterInterval: (value: number) => void
+	setJitterForce: (value: number) => void
 }
 
-const ImageFloat: React.FC<ImageFloatProps> = ({
-	src,
-	children,
-	numImages = 50,
-	forceFieldRadius = 100,
-	friction = 15,
-	mass = 1,
-	maxVelocity = 100,
-	sizeMultiplier = 1,
-	imageWidth = 50,
-	imageHeight = 50,
-	forceMultiplier = 13.66,
-	cursorInteract = true,
-	blackholeEffect = false,
-	collisions = true,
-	imageJitter = false,
-	jitterInterval = 1000,
-	jitterForce = 10,
-}) => {
-	const [mouse, setMouse] = useState({ x: 0, y: 0 })
+const defaultContext: ImageFloatContextProps = {
+	numImages: 50,
+	forceFieldRadius: 100,
+	friction: 15,
+	mass: 1,
+	maxVelocity: 100,
+	sizeMultiplier: 1,
+	imageWidth: 50,
+	imageHeight: 50,
+	forceMultiplier: 13.66,
+	cursorInteract: true,
+	blackholeEffect: false,
+	collisions: true,
+	imageJitter: false,
+	jitterInterval: 1000,
+	jitterForce: 10,
+	setNumImages: () => {},
+	setForceFieldRadius: () => {},
+	setFriction: () => {},
+	setMass: () => {},
+	setMaxVelocity: () => {},
+	setSizeMultiplier: () => {},
+	setImageWidth: () => {},
+	setImageHeight: () => {},
+	setForceMultiplier: () => {},
+	setCursorInteract: () => {},
+	setBlackholeEffect: () => {},
+	setCollisions: () => {},
+	setImageJitter: () => {},
+	setJitterInterval: () => {},
+	setJitterForce: () => {},
+}
+
+export const ImageFloatContext =
+	createContext<ImageFloatContextProps>(defaultContext)
+
+export const useImageFloatContext = () => {
+	const context = useContext(ImageFloatContext)
+	if (!context) {
+		throw new Error(
+			'useImageFloatContext must be used within an ImageFloatProvider'
+		)
+	}
+	return context
+}
+
+interface ImageFloatProps {
+	src: string
+	children?: ReactNode
+}
+
+const ImageFloat: React.FC<ImageFloatProps> = ({ src, children }) => {
+	const [numImages, setNumImages] = useState(defaultContext.numImages)
+	const [forceFieldRadius, setForceFieldRadius] = useState(
+		defaultContext.forceFieldRadius
+	)
+	const [friction, setFriction] = useState(defaultContext.friction)
+	const [mass, setMass] = useState(defaultContext.mass)
+	const [maxVelocity, setMaxVelocity] = useState(defaultContext.maxVelocity)
+	const [sizeMultiplier, setSizeMultiplier] = useState(
+		defaultContext.sizeMultiplier
+	)
+	const [imageWidth, setImageWidth] = useState(defaultContext.imageWidth)
+	const [imageHeight, setImageHeight] = useState(defaultContext.imageHeight)
+	const [forceMultiplier, setForceMultiplier] = useState(
+		defaultContext.forceMultiplier
+	)
+	const [cursorInteract, setCursorInteract] = useState(
+		defaultContext.cursorInteract
+	)
+	const [blackholeEffect, setBlackholeEffect] = useState(
+		defaultContext.blackholeEffect
+	)
+	const [collisions, setCollisions] = useState(defaultContext.collisions)
+	const [imageJitter, setImageJitter] = useState(defaultContext.imageJitter)
+	const [jitterInterval, setJitterInterval] = useState(
+		defaultContext.jitterInterval
+	)
+	const [jitterForce, setJitterForce] = useState(defaultContext.jitterForce)
 	const containerRef = useRef<HTMLDivElement>(null)
-	const jitterTimes = useRef<Map<number, number>>(new Map())
-	friction = Math.max(friction, 15)
-	mass = Math.max(mass, 1)
 
-	const FORCE_MULTIPLIER = forceMultiplier
-
+	const [mouse, setMouse] = useState({ x: 0, y: 0 })
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [springs, api] = useSprings(numImages, (_index: number) => ({
 		from: {
@@ -77,8 +135,14 @@ const ImageFloat: React.FC<ImageFloatProps> = ({
 			scale: getRandom(0.5, 1) * sizeMultiplier,
 			rotate: getRandom(0, 360),
 		},
-		config: { mass: mass, tension: 170, friction: friction },
+		config: {
+			mass: Math.max(mass, 1),
+			tension: 170,
+			friction: Math.max(friction, 15),
+		},
 	}))
+
+	const jitterTimes = useRef<Map<number, number>>(new Map())
 
 	useEffect(() => {
 		if (cursorInteract) {
@@ -99,6 +163,9 @@ const ImageFloat: React.FC<ImageFloatProps> = ({
 
 		const animate = () => {
 			api.start((i) => {
+				if (containerRef.current == null) {
+					return
+				}
 				const spring = springs[i]
 				const dx = spring.x.get() - mouse.x
 				const dy = spring.y.get() - mouse.y
@@ -111,7 +178,7 @@ const ImageFloat: React.FC<ImageFloatProps> = ({
 					const forceDirection = blackholeEffect ? -1 : 1
 					const force =
 						((forceFieldRadius - distance) / forceFieldRadius) *
-						FORCE_MULTIPLIER *
+						forceMultiplier *
 						forceDirection
 					fx = force * (dx / distance)
 					fy = force * (dy / distance)
@@ -138,11 +205,19 @@ const ImageFloat: React.FC<ImageFloatProps> = ({
 				}
 
 				if (newX < 0) newX = 0
-				if (newX > window.innerWidth - imageWidth * scale)
-					newX = window.innerWidth - imageWidth * scale
+				if (
+					newX >
+					containerRef.current.clientWidth - imageWidth * scale
+				)
+					newX =
+						containerRef.current.clientWidth - imageWidth * scale
 				if (newY < 0) newY = 0
-				if (newY > window.innerHeight - imageHeight * scale)
-					newY = window.innerHeight - imageHeight * scale
+				if (
+					newY >
+					containerRef.current.clientHeight - imageHeight * scale
+				)
+					newY =
+						containerRef.current.clientHeight - imageHeight * scale
 
 				if (collisions) {
 					for (let j = 0; j < springs.length; j++) {
@@ -202,7 +277,7 @@ const ImageFloat: React.FC<ImageFloatProps> = ({
 		api,
 		springs,
 		forceFieldRadius,
-		FORCE_MULTIPLIER,
+		forceMultiplier,
 		maxVelocity,
 		blackholeEffect,
 		collisions,
@@ -214,35 +289,70 @@ const ImageFloat: React.FC<ImageFloatProps> = ({
 	])
 
 	return (
-		<div
-			ref={containerRef}
-			style={{
-				position: 'relative',
-				width: '100%',
-				height: '100vh',
-				overflow: 'hidden',
+		<ImageFloatContext.Provider
+			value={{
+				numImages,
+				setNumImages,
+				forceFieldRadius,
+				setForceFieldRadius,
+				friction,
+				setFriction,
+				mass,
+				setMass,
+				maxVelocity,
+				setMaxVelocity,
+				sizeMultiplier,
+				setSizeMultiplier,
+				imageWidth,
+				setImageWidth,
+				imageHeight,
+				setImageHeight,
+				forceMultiplier,
+				setForceMultiplier,
+				cursorInteract,
+				setCursorInteract,
+				blackholeEffect,
+				setBlackholeEffect,
+				collisions,
+				setCollisions,
+				imageJitter,
+				setImageJitter,
+				jitterInterval,
+				setJitterInterval,
+				jitterForce,
+				setJitterForce,
 			}}
 		>
-			{springs.map((props, i) => (
-				<animated.div
-					key={i}
-					style={{
-						position: 'absolute',
-						willChange: 'transform',
-						transform: to(
-							[props.x, props.y, props.scale, props.rotate],
-							(x, y, scale, rotate) =>
-								`translate3d(${x}px,${y}px,0) scale(${scale}) rotate(${rotate}deg)`
-						),
-						width: imageWidth,
-						height: imageHeight,
-						backgroundImage: `url(${src})`,
-						backgroundSize: 'cover',
-					}}
-				/>
-			))}
-			{children}
-		</div>
+			<div
+				ref={containerRef}
+				style={{
+					position: 'relative',
+					width: '100%',
+					height: '100%',
+					overflow: 'hidden',
+				}}
+			>
+				{springs.map((props, i) => (
+					<animated.div
+						key={i}
+						style={{
+							position: 'absolute',
+							willChange: 'transform',
+							transform: to(
+								[props.x, props.y, props.scale, props.rotate],
+								(x, y, scale, rotate) =>
+									`translate3d(${x}px,${y}px,0) scale(${scale}) rotate(${rotate}deg)`
+							),
+							width: imageWidth,
+							height: imageHeight,
+							backgroundImage: `url(${src})`,
+							backgroundSize: 'cover',
+						}}
+					/>
+				))}
+				{children}
+			</div>
+		</ImageFloatContext.Provider>
 	)
 }
 
