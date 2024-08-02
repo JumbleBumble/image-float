@@ -167,8 +167,10 @@ const ImageFloat: React.FC<ImageFloatProps> = ({ src, children }) => {
 					return
 				}
 				const spring = springs[i]
-				const dx = spring.x.get() - mouse.x
-				const dy = spring.y.get() - mouse.y
+				const currentX = spring.x.get()
+				const currentY = spring.y.get()
+				const dx = currentX - mouse.x
+				const dy = currentY - mouse.y
 				const distance = Math.sqrt(dx * dx + dy * dy)
 				const scale = spring.scale.get()
 
@@ -187,8 +189,8 @@ const ImageFloat: React.FC<ImageFloatProps> = ({ src, children }) => {
 				fx = Math.min(maxVelocity, Math.max(-maxVelocity, fx))
 				fy = Math.min(maxVelocity, Math.max(-maxVelocity, fy))
 
-				let newX = spring.x.get() + fx
-				let newY = spring.y.get() + fy
+				let newX = currentX + fx
+				let newY = currentY + fy
 
 				if (imageJitter) {
 					const now = Date.now()
@@ -228,7 +230,8 @@ const ImageFloat: React.FC<ImageFloatProps> = ({ src, children }) => {
 							const otherScale = other.scale.get()
 
 							const distance = Math.sqrt(
-								(otherX - newX) ** 2 + (otherY - newY) ** 2
+								(otherX - currentX) ** 2 +
+									(otherY - currentY) ** 2
 							)
 
 							const minDistance =
@@ -246,11 +249,11 @@ const ImageFloat: React.FC<ImageFloatProps> = ({ src, children }) => {
 							if (distance < minDistance) {
 								const overlap = minDistance - distance
 								const angle = Math.atan2(
-									newY - otherY,
-									newX - otherX
+									currentY - otherY,
+									currentX - otherX
 								)
-								newX += Math.cos(angle) * overlap
-								newY += Math.sin(angle) * overlap
+								newX = currentX + Math.cos(angle) * overlap
+								newY = currentY + Math.sin(angle) * overlap
 							}
 						}
 					}
